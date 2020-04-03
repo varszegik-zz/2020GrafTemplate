@@ -1,6 +1,6 @@
 //=============================================================================================
 // Collection of programs from lecture slides.
-// Framework for assignments. Valid from 2019.
+// Framework for assignments. Valid from 2020.
 //
 // Do not change it if you want to submit a homework.
 // In the homework, file operations other than printf are prohibited.
@@ -78,76 +78,21 @@ inline vec3 cross(const vec3& v1, const vec3& v2) {
 
 inline vec3 operator*(float a, const vec3& v) { return vec3(v.x * a, v.y * a, v.z * a); }
 
-//---------------------------
-struct mat4 { // row-major matrix 4x4
-//---------------------------
-	float m[4][4];
-public:
-	mat4() {}
-	mat4(float m00, float m01, float m02, float m03,
-		float m10, float m11, float m12, float m13,
-		float m20, float m21, float m22, float m23,
-		float m30, float m31, float m32, float m33) {
-		m[0][0] = m00; m[0][1] = m01; m[0][2] = m02; m[0][3] = m03;
-		m[1][0] = m10; m[1][1] = m11; m[1][2] = m12; m[1][3] = m13;
-		m[2][0] = m20; m[2][1] = m21; m[2][2] = m22; m[2][3] = m23;
-		m[3][0] = m30; m[3][1] = m31; m[3][2] = m32; m[3][3] = m33;
-	}
-
-	mat4 operator*(const mat4& right) const {
-		mat4 result;
-		for (int i = 0; i < 4; i++) {
-			for (int j = 0; j < 4; j++) {
-				result.m[i][j] = 0;
-				for (int k = 0; k < 4; k++) result.m[i][j] += m[i][k] * right.m[k][j];
-			}
-		}
-		return result;
-	}
-};
-
-inline mat4 TranslateMatrix(vec3 t) {
-	return mat4(1, 0, 0, 0,
-		0, 1, 0, 0,
-		0, 0, 1, 0,
-		t.x, t.y, t.z, 1);
-}
-
-inline mat4 ScaleMatrix(vec3 s) {
-	return mat4(s.x, 0, 0, 0,
-		0, s.y, 0, 0,
-		0, 0, s.z, 0,
-		0, 0, 0, 1);
-}
-
-inline mat4 RotationMatrix(float angle, vec3 w) {
-	float c = cosf(angle), s = sinf(angle);
-	w = normalize(w);
-	return mat4(c * (1 - w.x*w.x) + w.x*w.x, w.x*w.y*(1 - c) + w.z*s, w.x*w.z*(1 - c) - w.y*s, 0,
-		w.x*w.y*(1 - c) - w.z*s, c * (1 - w.y*w.y) + w.y*w.y, w.y*w.z*(1 - c) + w.x*s, 0,
-		w.x*w.z*(1 - c) + w.y*s, w.y*w.z*(1 - c) - w.x*s, c * (1 - w.z*w.z) + w.z*w.z, 0,
-		0, 0, 0, 1);
-}
-
 //--------------------------
 struct vec4 {
 //--------------------------
 	float x, y, z, w;
 
-	vec4(float x0 = 0, float y0 = 0, float z0 = 0, float w0 = 0) { x = x0; y = y0; z = z0; w = w0;  }
+	vec4(float x0 = 0, float y0 = 0, float z0 = 0, float w0 = 0) { x = x0; y = y0; z = z0; w = w0; }
+	float& operator[](int j) { return *(&x + j); }
+	float operator[](int j) const { return *(&x + j); }
+
 	vec4 operator*(float a) const { return vec4(x * a, y * a, z * a, w * a); }
 	vec4 operator/(float d) const { return vec4(x / d, y / d, z / d, w / d); }
 	vec4 operator+(const vec4& v) const { return vec4(x + v.x, y + v.y, z + v.z, w + v.w); }
 	vec4 operator-(const vec4& v)  const { return vec4(x - v.x, y - v.y, z - v.z, w - v.w); }
 	vec4 operator*(const vec4& v) const { return vec4(x * v.x, y * v.y, z * v.z, w * v.w); }
 	void operator+=(const vec4 right) { x += right.x; y += right.y; z += right.z, w += right.z; }
-
-	vec4 operator*(const mat4& mat) {
-		return vec4(x * mat.m[0][0] + y * mat.m[1][0] + z * mat.m[2][0] + w * mat.m[3][0],
-			x * mat.m[0][1] + y * mat.m[1][1] + z * mat.m[2][1] + w * mat.m[3][1],
-			x * mat.m[0][2] + y * mat.m[1][2] + z * mat.m[2][2] + w * mat.m[3][2],
-			x * mat.m[0][3] + y * mat.m[1][3] + z * mat.m[2][3] + w * mat.m[3][3]);
-	}
 };
 
 inline float dot(const vec4& v1, const vec4& v2) {
@@ -159,13 +104,71 @@ inline vec4 operator*(float a, const vec4& v) {
 }
 
 //---------------------------
+struct mat4 { // row-major matrix 4x4
+//---------------------------
+	vec4 rows[4];
+public:
+	mat4() {}
+	mat4(float m00, float m01, float m02, float m03,
+		float m10, float m11, float m12, float m13,
+		float m20, float m21, float m22, float m23,
+		float m30, float m31, float m32, float m33) {
+		rows[0][0] = m00; rows[0][1] = m01; rows[0][2] = m02; rows[0][3] = m03;
+		rows[1][0] = m10; rows[1][1] = m11; rows[1][2] = m12; rows[1][3] = m13;
+		rows[2][0] = m20; rows[2][1] = m21; rows[2][2] = m22; rows[2][3] = m23;
+		rows[3][0] = m30; rows[3][1] = m31; rows[3][2] = m32; rows[3][3] = m33;
+	}
+	mat4(vec4 it, vec4 jt, vec4 kt, vec4 ot) {
+		rows[0] = it; rows[1] = jt; rows[2] = kt; rows[3] = ot;
+	}
+
+	vec4& operator[](int i) { return rows[i]; }
+	vec4 operator[](int i) const { return rows[i]; }
+	operator float*() const { return (float*)this; }
+};
+
+inline vec4 operator*(const vec4& v, const mat4& mat) {
+	return v[0] * mat[0] + v[1] * mat[1] + v[2] * mat[2] + v[3] * mat[3];
+}
+
+inline mat4 operator*(const mat4& left, const mat4& right) {
+	mat4 result;
+	for (int i = 0; i < 4; i++) result.rows[i] = left.rows[i] * right;
+	return result;
+}
+
+inline mat4 TranslateMatrix(vec3 t) {
+	return mat4(vec4(1,   0,   0,   0),
+			    vec4(0,   1,   0,   0),
+				vec4(0,   0,   1,   0),
+				vec4(t.x, t.y, t.z, 1));
+}
+
+inline mat4 ScaleMatrix(vec3 s) {
+	return mat4(vec4(s.x, 0,   0,   0),
+			    vec4(0,   s.y, 0,   0),
+				vec4(0,   0,   s.z, 0),
+				vec4(0,   0,   0,   1));
+}
+
+inline mat4 RotationMatrix(float angle, vec3 w) {
+	float c = cosf(angle), s = sinf(angle);
+	w = normalize(w);
+	return mat4(vec4(c * (1 - w.x*w.x) + w.x*w.x, w.x*w.y*(1 - c) + w.z*s, w.x*w.z*(1 - c) - w.y*s, 0),
+			    vec4(w.x*w.y*(1 - c) - w.z*s, c * (1 - w.y*w.y) + w.y*w.y, w.y*w.z*(1 - c) + w.x*s, 0),
+			    vec4(w.x*w.z*(1 - c) + w.y*s, w.y*w.z*(1 - c) - w.x*s, c * (1 - w.z*w.z) + w.z*w.z, 0),
+			    vec4(0, 0, 0, 1));
+}
+
+//---------------------------
 class Texture {
 //---------------------------
-	std::vector<vec4> load(std::string pathname, bool transparent, int& width, int& height) { // width should be multiple of 4!!!
+	std::vector<vec4> load(std::string pathname, bool transparent, int& width, int& height) {
 		FILE * file = fopen(pathname.c_str(), "r");
 		if (!file) {
 			printf("%s does not exist\n", pathname.c_str());
-			exit(-1);
+			width = height = 0;
+			return std::vector<vec4>();
 		}
 		unsigned short bitmapFileHeader[27];					// bitmap header
 		fread(&bitmapFileHeader, 27, 2, file);
@@ -173,11 +176,6 @@ class Texture {
 		if (bitmapFileHeader[14] != 24) printf("Only true color bmp files are supported\n");
 		width = bitmapFileHeader[9];
 		height = bitmapFileHeader[11];
-		// Here we check if we need to take into account row padding
-		if (width % 4 != 0) {
-			printf("Width  should be multiple of 4 to avoid padding\n");
-			exit(-1);
-		}
 		unsigned int size = (unsigned long)bitmapFileHeader[17] + (unsigned long)bitmapFileHeader[18] * 65536;
 		fseek(file, 54, SEEK_SET);
 		std::vector<unsigned char> bImage(size);
@@ -238,7 +236,9 @@ public:
 //---------------------------
 class GPUProgram {
 //--------------------------
-	unsigned int shaderProgramId;
+	unsigned int shaderProgramId = 0;
+	unsigned int vertexShader = 0, geometryShader = 0, fragmentShader = 0;
+	bool waitError = true;
 
 	void getErrorInfo(unsigned int handle) { // shader error report
 		int logLen, written;
@@ -247,19 +247,30 @@ class GPUProgram {
 			std::string log(logLen, '\0');
 			glGetShaderInfoLog(handle, logLen, &written, &log[0]);
 			printf("Shader log:\n%s", log.c_str());
+			if (waitError) getchar();
 		}
 	}
 
-	void checkShader(unsigned int shader, std::string message) { // check if shader could be compiled
+	bool checkShader(unsigned int shader, std::string message) { // check if shader could be compiled
 		int OK;
 		glGetShaderiv(shader, GL_COMPILE_STATUS, &OK);
-		if (!OK) { printf("%s!\n", message.c_str()); getErrorInfo(shader); getchar(); }
+		if (!OK) {
+			printf("%s!\n", message.c_str());
+			getErrorInfo(shader);
+			return false;
+		}
+		return true;
 	}
 
-	void checkLinking(unsigned int program) { 	// check if shader could be linked
+	bool checkLinking(unsigned int program) { 	// check if shader could be linked
 		int OK;
 		glGetProgramiv(program, GL_LINK_STATUS, &OK);
-		if (!OK) { printf("Failed to link shader program!\n"); getErrorInfo(program); getchar(); }
+		if (!OK) {
+			printf("Failed to link shader program!\n");
+			getErrorInfo(program);
+			return false;
+		}
+		return true;
 	}
 
 	int getLocation(const std::string& name) {	// get the address of a GPU uniform variable
@@ -269,7 +280,7 @@ class GPUProgram {
 	}
 
 public:
-	GPUProgram() { shaderProgramId = 0; }
+	GPUProgram(bool _waitError = true) { shaderProgramId = 0; waitError = _waitError; }
 
 	GPUProgram(const GPUProgram& program) {
 		if (program.shaderProgramId > 0) printf("\nError: GPU program is not copied on GPU!!!\n");
@@ -281,35 +292,34 @@ public:
 
 	unsigned int getId() { return shaderProgramId; }
 
-	void create(const char * const vertexShaderSource,
+	bool create(const char * const vertexShaderSource,
 		        const char * const fragmentShaderSource, const char * const fragmentShaderOutputName,
 		        const char * const geometryShaderSource = nullptr)
 	{
 		// Create vertex shader from string
-		unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
+		if (vertexShader == 0) vertexShader = glCreateShader(GL_VERTEX_SHADER);
 		if (!vertexShader) {
 			printf("Error in vertex shader creation\n");
 			exit(1);
 		}
 		glShaderSource(vertexShader, 1, (const GLchar**)&vertexShaderSource, NULL);
 		glCompileShader(vertexShader);
-		checkShader(vertexShader, "Vertex shader error");
+		if (!checkShader(vertexShader, "Vertex shader error")) return false;
 
 		// Create geometry shader from string if given
-		unsigned int geometryShader = 0;
 		if (geometryShaderSource != nullptr) {
-			geometryShader = glCreateShader(GL_GEOMETRY_SHADER);
+			if (geometryShader == 0) geometryShader = glCreateShader(GL_GEOMETRY_SHADER);
 			if (!geometryShader) {
 				printf("Error in geometry shader creation\n");
 				exit(1);
 			}
 			glShaderSource(geometryShader, 1, (const GLchar**)&geometryShaderSource, NULL);
 			glCompileShader(geometryShader);
-			checkShader(geometryShader, "Geometry shader error");
+			if (!checkShader(geometryShader, "Geometry shader error")) return false;
 		}
 
 		// Create fragment shader from string
-		unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+		if (fragmentShader == 0) fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 		if (!fragmentShader) {
 			printf("Error in fragment shader creation\n");
 			exit(1);
@@ -317,7 +327,7 @@ public:
 
 		glShaderSource(fragmentShader, 1, (const GLchar**)&fragmentShaderSource, NULL);
 		glCompileShader(fragmentShader);
-		checkShader(fragmentShader, "Fragment shader error");
+		if (!checkShader(fragmentShader, "Fragment shader error")) return false;
 
 		shaderProgramId = glCreateProgram();
 		if (!shaderProgramId) {
@@ -333,10 +343,11 @@ public:
 
 		// program packaging
 		glLinkProgram(shaderProgramId);
-		checkLinking(shaderProgramId);
+		if (!checkLinking(shaderProgramId)) return false;
 
 		// make this program run
 		glUseProgram(shaderProgramId);
+		return true;
 	}
 
 	void Use() { 		// make this program run
@@ -370,7 +381,7 @@ public:
 
 	void setUniform(const mat4& mat, const std::string& name) {
 		int location = getLocation(name);
-		if (location >= 0) glUniformMatrix4fv(location, 1, GL_TRUE, &mat.m[0][0]);
+		if (location >= 0) glUniformMatrix4fv(location, 1, GL_TRUE, mat);
 	}
 
 	void setUniform(const Texture& texture, const std::string& samplerName, unsigned int textureUnit = 0) {
